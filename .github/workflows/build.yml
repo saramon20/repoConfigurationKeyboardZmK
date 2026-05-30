@@ -18,10 +18,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Delete Previous Cache
         run: |
           rm -rf modules/ tools/ zephyr/ bootloader/ zmk/
         continue-on-error: true
+
       - name: Cache west modules
         uses: actions/cache@v4
         env:
@@ -38,19 +40,32 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
+
       - name: West Init
         run: west init -l config
+
       - name: West Update
         run: west update
+
+      - name: Patch Corne LED chain-length
+        run: |
+          sed -i 's/chain-length = <10>/chain-length = <27>/' \
+            zmk/app/boards/shields/corne/boards/nice_nano_v2.overlay
+          echo "Patched overlay:"
+          cat zmk/app/boards/shields/corne/boards/nice_nano_v2.overlay
+
       - name: West Zephyr export
         run: west zephyr-export
+
       - name: West Build (${{ matrix.shield }})
         run: west build -s zmk/app -b ${{ matrix.board }} -- -DSHIELD="${{ matrix.shield }}" -DZMK_CONFIG="${GITHUB_WORKSPACE}/config"
+
       - name: Rename ZMK
         run: |
           BOARD_SAFE=$(echo "${{ matrix.board }}" | tr '/' '-')
           cp build/zephyr/zmk.uf2 ${{ matrix.shield }}-${BOARD_SAFE}-zmk.uf2
           echo "BOARD_SAFE=${BOARD_SAFE}" >> $GITHUB_ENV
+
       - name: Archive (${{ matrix.shield }})
         uses: actions/upload-artifact@v4
         with:
