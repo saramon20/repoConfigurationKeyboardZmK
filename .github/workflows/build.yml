@@ -49,7 +49,7 @@ jobs:
 
       - name: Patch Corne LED chain-length
         run: |
-          sed -i 's/chain-length = <10>/chain-length = <27>/' \
+          sed -i 's/chain-length = <10>/chain-length = <21>/' \
             zmk/app/boards/shields/corne/boards/nice_nano_v2.overlay
           echo "Patched overlay:"
           cat zmk/app/boards/shields/corne/boards/nice_nano_v2.overlay
